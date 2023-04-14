@@ -9,14 +9,8 @@ from IPython.display import display
 from pandas.plotting import table
 import googlemaps
  
-# Requires API key
+#Google maps API
 gmaps = googlemaps.Client(key='AIzaSyDUSFRYXXmwU7MPuwQw4C1OqCdY0IujtaU')
- 
-# Requires cities name
-my_dist = gmaps.distance_matrix('Delhi','Mumbai')['rows'][0]['elements'][0]['distance']['value']
-
-#Hur många kilometer är en breddgrad
-bg = 111 
 
 #Total konsumtionen för vår konsumentbas
 tot_kons = 1000
@@ -55,6 +49,7 @@ def addlabels(x,y,s):
     for i in range(len(x)):
         plt.text(x[i], y[i]+0.15, s[i], ha = 'center')
 
+#Skapa listor för producenter
 for i in range(len(producenter)):
     x = producenter[i][0]
     y = producenter[i][1]
