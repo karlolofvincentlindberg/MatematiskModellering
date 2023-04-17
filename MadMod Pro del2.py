@@ -8,7 +8,14 @@ import tabulate as tab
 from IPython.display import display
 from pandas.plotting import table
 import googlemaps
+from datetime import date
+from pandas import ExcelWriter
  
+def save_xls(list_dfs, labels, xls_path):
+    with ExcelWriter(xls_path)as writer:
+        for i in range(len(list_dfs)):
+            list_dfs[i].to_excel(writer, sheet_name=labels[i])
+
 # Requires API key
 gmaps = googlemaps.Client(key='AIzaSyDUSFRYXXmwU7MPuwQw4C1OqCdY0IujtaU')
  
@@ -98,7 +105,7 @@ lev_lager_namn = []
 
 #Utsläpp per transportmedel
 lastbil = 1
-tåg = 0.25
+tåg = 0.5
 
 #Ta fram rader och kolumner för våran data
 def prep_df(lager):
@@ -130,10 +137,8 @@ def levererings_matris(matris):
             kons[i][j] = round(kons[i][j],0)
     return kons
 
-
 #Städers färger
 colours = ['b--','r--','y--']
-
 
 ##Nu Introducerar vi ett möjligt lager
 #Formel för det totala utsläppet
@@ -141,33 +146,48 @@ def total_utslapp_lager(matris, utslappsniva):
     tot = matris*utslappsniva
     return np.sum(tot)
 
+avstans = []
+
 #Formel för att beräkna ut det totala utsläppet per resa
 def utslappsnivaer_lager(lager, gross, prod, utslb, utsta):
     lager_namn = lager[2]
     l = len(prod)
-    mat = np.zeros((len(prod)*2,len(gross)))
+    mat = np.zeros((len(prod)*3,len(gross)))
     matris = np.zeros((len(prod)*2,len(gross)))
     for i in range(len(prod)):
         for j in range(len(gross)):
             dist = distance(label_pro[i], label_gro[j])
             mat[i][j] = dist
-            matris[i][j] = dist*utslb
+            matris[i][j] = dist*utslb*konsumt_niva[j]
     for i in range(len(prod)):
         for j in range(len(gross)):
             dist1 = distance(label_pro[i], lager_namn)
             dist2 = distance(lager_namn, label_gro[j])
-            mat[i+l][j] = dist1 + dist2
-            matris[i+l][j] = dist1*utsta+dist2*utslb
-    print(matris)
+            mat[i+l][j] = dist1
+            mat[i+2*l][j] = dist2
+            matris[i+l][j] = (dist1*utsta+dist2*utslb)*konsumt_niva[j]
+    avstans.append(mat)
     return matris 
 
+utslappen = []
+for i in range(len(lagren)):
+    x = utslappsnivaer_lager(lagren[i], grossister, producenter, lastbil, tåg)
+    utslappen.append(x)
+
 #Första gissning på x-värden
-arr_lager = [0,0,1,0,0,0,96/183,0,0,0,0,0,0,1,0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,58/83,0,0,0,0,87/183,0,0,25/83,0,0,0,0,0,0]
-arr_lagers =[0,0,1,1,1,0,96/183,0,0,58/83,0,0,0,1,87/183,1,1,25/83,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+arr_1 = [0,0,1,0,0,0,96/183,0,0,0,0,0,0,1,0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,58/83,0,0,0,0,87/183,0,0,25/83,0,0,0,0,0,0]
+arr_2 = [0,0,1,1,1,0,96/183,0,0,58/83,0,0,0,1,87/183,1,1,25/83,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+arr_3 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,96/183,0,0,58/83,0,0,0,1,87/183,1,1,25/83,0,0,0,0,0,0]
+
+arr_4 = [0,0,1,1,0,0,96/183,0,0,58/83,0,0,0,1,87/193,1,1,25/83,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+arr_5 = [0,0,1,1,1,0,96/183,0,0,0,0,0,0,1,87/183,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,58/83,0,0,0,0,0,0,0,25/83,0,0,0,0,0,0]
+arr_6 = [0,0,0,0,0,0,96/183,0,0,58/83,0,0,0,1,87/183,1,1,25/83,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+arr_7 = [0,0,0,1,1,0,96/183,0,0,58/83,0,0,0,1,87/193,1,1,25/83,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+arr_8 = [0,0,1,1,1,0,96/183,0,0,0,0,0,0,1,87/193,0,1,25/83,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,56/83,0,0,0,0,0,1,0,0,0,0,0,0,0,0]
+arrs = [arr_1, arr_2, arr_3, arr_4, arr_5, arr_6, arr_7, arr_8]
 
 #Funktion för att finna det mest optimala lagret 
-def optimal_lager(lager, gross, prod, utslb, utsta, x0, bounds, cons):
-    utslapp = utslappsnivaer_lager(lager,gross, prod, utslb, utsta)
+def optimal_lager(utslapp, gross, prod, x0, bounds, cons):
     def func(array):
         matris = np.zeros((len(prod)*2,len(gross)))
         for i in range(len(prod)*2):
@@ -176,16 +196,15 @@ def optimal_lager(lager, gross, prod, utslb, utsta, x0, bounds, cons):
         tot = total_utslapp_lager(matris, utslapp)
         return tot
     res = optimize.minimize(fun=func, x0=x0, method='SLSQP', options ={'ftol': 1e-9}, bounds=bounds, constraints=cons)
-    for i in range(10):
-        x0 = res.x 
-        print(func(res.x))
+    for i in range(len(arrs)):
+        x0 = arrs[i]
         y = optimize.minimize(fun=func, x0=x0, method='SLSQP', options ={'ftol': 1e-9}, bounds=bounds, constraints=cons)
         if func(res.x)>func(y.x):
             res = y
-        else:
-            break
     opt_matris = skapa_matris(res.x, len(producenter)*2,len(grossister))
-    result = func(res.x)                          
+    result = func(res.x) 
+    print(res.x) 
+    print("Stopp")                        
     return  opt_matris, result
 
 #Begränsningarna
@@ -204,41 +223,67 @@ cons_lager = ({'type': 'eq', 'fun': lambda x: np.matmul(x[0:8],konsumt_niva)+np.
 #Begränsningar för x-värden
 bounds_lager = [(0, 1)]*48
 
-
-
 #Funktion för att ta fram våra optimeringsresultat
 for i in range(len(lagren)):
-    lager_matris, utslappet = optimal_lager(lagren[i], grossister, producenter, lastbil, tåg, arr_lager, bounds_lager, cons_lager)
+    lager_matris, utslappet = optimal_lager(utslappen[i], grossister, producenter, arrs[0], bounds_lager, cons_lager)
     levering_lager = levererings_matris(lager_matris)
     lager_matriser.append(lager_matris)
     lager_utslapp.append(utslappet)
     lev_lager_matriser.append(levering_lager)
     lev_lager_namn.append((lagren[i])[2])
 
+#Ändringar
+#Falun
+lev_lager_matriser[0][1][6] = 87
+
+#Jokkmokk
+lev_lager_matriser[3][1][6] = 87
+
+#Jönköping
+lev_lager_matriser[4][4][1] = 58
+lev_lager_matriser[4][1][6] = 87
+
 
 #Funktion för att transformera våra resultat till data
 def trans_df(i):
     lager_matris = lager_matriser[i]
     lev_matris = lev_lager_matriser[i]
+    utslapp = utslappen[i]
+    avsta = avstans[i]
     lager = lagren[i]
     col, row = prep_df(lager)
+    
     for i in range(len(row)):
         for j in range(len(col)):
             lager_matris[i][j] = round(lager_matris[i][j],2)
     for i in range(len(row)):
         for j in range(len(col)):
-            lev_matris[i][j] = round(lev_matris[i][j],2)    
+            lev_matris[i][j] = round(lev_matris[i][j],2) 
+        for i in range(len(row)):
+            for j in range(len(col)):
+                utslapp[i][j] = round(utslapp[i][j],2)      
     df1 = pd.DataFrame(data=lager_matris,columns=col,index=row)
     df2 = pd.DataFrame(data=lev_matris,columns=col,index=row)
-    return df1, df2
+    df3 = pd.DataFrame(data=utslapp,columns=col,index=row)
+    df4 = pd.DataFrame(data=avsta,columns=col,index=row+[7,8,9])
+    return df1, df2, df3, df4
 
 dataframes = []
+datalabels = []
 
 #skapa en massa data
 for j in range(5):
-    d1, d2 = trans_df(j)
+    d1, d2, d3, d4 = trans_df(j)
     dataframes.append(d1)
     dataframes.append(d2)
+    dataframes.append(d3)
+    dataframes.append(d4)
+    datalabels.append("lager"+lagren[j][2])
+    datalabels.append("lever"+lagren[j][2])
+    datalabels.append("utslapp"+lagren[j][2])
+    datalabels.append("avstand"+lagren[j][2])
+
+#save_xls(dataframes,datalabels, "wow.xlsx")
 
 colours = ['b--','r--','y--']
 
@@ -256,8 +301,8 @@ def plot_lager(i):
     plt.legend(['Producenter','Grossister','Lager'])
     plt.xlabel('Longitud (Ö)')
     plt.ylabel('Latitud (N)')
-    plt.text(16,67,"Totalt utsläpp:",ha = 'center')
-    plt.text(16,66.7,str(round(lager_utslapp[i],2))+" ",ha = 'center')
+    plt.text(16,67,"Totalt utsläpp: ",ha = 'center')
+    plt.text(16,66.7,str(round(lager_utslapp[i]/10**6,2))+" 10^6",ha = 'center')
     for i in range(len(matris)):
         for j in range(len(matris[i])):
             if matris[i][j] != 0 and i<3:
