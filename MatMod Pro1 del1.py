@@ -193,13 +193,13 @@ optimal_tabell = pd.DataFrame(optimal_matris, index=label_pro, columns=label_gro
 levererings_tabell = pd.DataFrame(optimala_leveranser, index=label_pro, columns=label_gro)
 
 #Städers färger
-colours = ['b--','r--','y--']
+colours = ['m--','c--','y--']
 
 #Rita linjer
 plt.figure(figsize=(8,12))
 plt.plot(x_pro,y_pro,'ro')
 addlabels(x_pro,y_pro,label_pro)
-plt.plot(x_gro,y_gro,'bo')
+plt.plot(x_gro,y_gro,'bv')
 addlabels(x_gro,y_gro,label_gro)
 plt.legend(['Producenter','Grossister','Lager'])
 plt.xlabel('Longitud (Ö)')
@@ -246,3 +246,4 @@ ax.yaxis.set_visible(False)
 table(ax, levererings_tabell)
 plt.show()
 plt.savefig('leveranser')
+

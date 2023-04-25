@@ -285,7 +285,7 @@ for j in range(5):
 
 #save_xls(dataframes,datalabels, "wow.xlsx")
 
-colours = ['b--','r--','y--']
+colours = ['m--','c--','y--']
 
 #Plotta valet
 def plot_lager(i):
@@ -294,15 +294,15 @@ def plot_lager(i):
     plt.figure(figsize=(8,12))  
     plt.plot(x_pro,y_pro,'ro')
     addlabels(x_pro,y_pro,label_pro)
-    plt.plot(x_gro,y_gro,'bo')
+    plt.plot(x_gro,y_gro,'bv')
     addlabels(x_gro,y_gro,label_gro)
-    plt.plot(lager[0],lager[1],'go')
+    plt.plot(lager[0],lager[1],'ks')
     plt.text(lager[0],lager[1]+0.15,lager[2], ha ='center')
     plt.legend(['Producenter','Grossister','Lager'])
     plt.xlabel('Longitud (Ö)')
     plt.ylabel('Latitud (N)')
-    plt.text(16,67,"Totalt utsläpp: ",ha = 'center')
-    plt.text(16,66.7,str(round(lager_utslapp[i]/10**6,2))+" 10^6",ha = 'center')
+    #plt.text(16,67,"Totalt utsläpp: ",ha = 'center')
+    #plt.text(16,66.7,str(round(lager_utslapp[i]/10**6,2))+" 10^6",ha = 'center')
     for i in range(len(matris)):
         for j in range(len(matris[i])):
             if matris[i][j] != 0 and i<3:
